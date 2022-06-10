@@ -1,0 +1,70 @@
+PODS:
+  - InAppSettingsKit (3.3.6)
+  - MapboxCommon (21.1.0)
+  - MapboxCoreMaps (10.3.2):
+    - MapboxCommon (~> 21.1)
+  - MapboxCoreNavigation (2.3.0):
+    - MapboxDirections (~> 2.3)
+    - MapboxMobileEvents (~> 1.0)
+    - MapboxNavigationNative (~> 88.0)
+  - MapboxDirections (2.3.0):
+    - Polyline (~> 5.0)
+    - Turf (~> 2.0)
+  - MapboxMaps (10.3.0):
+    - MapboxCommon (= 21.1.0)
+    - MapboxCoreMaps (= 10.3.2)
+    - MapboxMobileEvents (= 1.0.7)
+    - Turf (~> 2.0)
+  - MapboxMobileEvents (1.0.7)
+  - MapboxNavigation (2.3.0):
+    - MapboxCoreNavigation (= 2.3.0)
+    - MapboxMaps (~> 10.3)
+    - MapboxMobileEvents (~> 1.0)
+    - MapboxSpeech (~> 2.0)
+    - Solar-dev (~> 3.0)
+  - MapboxNavigationNative (88.0.0):
+    - MapboxCommon (~> 21.1)
+  - MapboxSpeech (2.0.0)
+  - Polyline (5.0.2)
+  - Solar-dev (3.0.1)
+  - Turf (2.3.0)
+
+DEPENDENCIES:
+  - InAppSettingsKit
+  - MapboxCoreNavigation (~> 2.3)
+  - MapboxNavigation (~> 2.3)
+
+SPEC REPOS:
+  trunk:
+    - InAppSettingsKit
+    - MapboxCommon
+    - MapboxCoreMaps
+    - MapboxCoreNavigation
+    - MapboxDirections
+    - MapboxMaps
+    - MapboxMobileEvents
+    - MapboxNavigation
+    - MapboxNavigationNative
+    - MapboxSpeech
+    - Polyline
+    - Solar-dev
+    - Turf
+
+SPEC CHECKSUMS:
+  InAppSettingsKit: 37df0b44132380d4c7db6fc7cded92997e29873a
+  MapboxCommon: 019dac381fcb3aab115b5d488593261c810253ad
+  MapboxCoreMaps: 418b6e02464c00d7227e778164f6ca67755ae6a1
+  MapboxCoreNavigation: cb3fc8931d75a910b1fd53c2df15b625d8c96d47
+  MapboxDirections: 305d743dbee1e0b49d6100a2b946b47cec18b42c
+  MapboxMaps: fc490ab5b8df6f74a82d35c56bc2ea4d576ad4ee
+  MapboxMobileEvents: f7f3e8daeb4b83688ae62a4172dce79169a97233
+  MapboxNavigation: 6e984ed7b05ab48c167fff8464c6eb55e862ac8d
+  MapboxNavigationNative: 7c588083547b121cf154402560364059aa5271e9
+  MapboxSpeech: e4ed02984444b6373374c72c369edaf045cc490c
+  Polyline: fce41d72e1146c41c6d081f7656827226f643dff
+  Solar-dev: 4612dc9878b9fed2667d23b327f1d4e54e16e8d0
+  Turf: d8d52444483c968cf2d65b8b54640f8faf4dda03
+
+PODFILE CHECKSUM: c57431c9614a6d8440602818dce1e99b365cffd4
+
+COCOAPODS: 1.11.2

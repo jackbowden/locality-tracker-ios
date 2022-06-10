@@ -1,0 +1,268 @@
+// // todo: study: swift result
+// let fuck = TileStore.default
+// print("GOT RESULTS 1")
+// fuck.allTileRegions { result in
+//     print("GOT RESULTS 2")
+//     switch result {
+//     case .success(let regions):
+//         print("number of regions \(regions.count)")
+//         for region in regions {
+//             fuck.tileRegionGeometry(forId: region.id) { result2 in
+//                 switch result2 {
+//                 case .success(let tileGeom):
+//                     print("TILE SUCCESS: \(tileGeom.geometryType)")
+//                 case .failure(let error2):
+//                     print("TILE ERROR 2: \(error2.localizedDescription)")
+//                 }
+//             }
+//         }
+//     case .failure(let error):
+//         print("TILE ERROR: \(error.localizedDescription)")
+//     }
+// }
+    
+// // MARK: populate road objects
+// decompAll.sort { first, second in
+//     first.lastKnownDistance < second.lastKnownDistance
+// }
+
+// if let horizon = self.navigation.lastKnownEHPHorizion {
+//     for locality in decompAll {
+//         if locality.lastKnownDistance <= 3200 {
+//             let info = locality.info
+
+//             let fucker = HelperFunctions.findEdgeIntersectionWithLocality(horizon, locality.info)
+//             if fucker != nil {
+//                 if let theObject = passiveLocationManager.roadObjectStore.roadObject(identifier: "\(locality.layername) \(info.gid) \(fucker!.locality.name) \(fucker!.roadEdge.identifier)") {
+//                     print("Already Matched: ID: \(theObject.identifier), type: \(theObject.type)\nWILL MATCH AGAINN.")
+
+//                 } else {
+//                     print("Attempting to match \(locality.layername) \(info.gid) \(fucker!.locality.name) \(fucker!.roadEdge.identifier)\n")
+
+//                     //passiveLocationManager.roadObjectMatcher.match(gantry: MultiPoint([fucker!.0, fucker!.0]), identifier: "\(locality.layername) \(info.gid) \(info.name) \(fucker!.1.identifier)")
+
+//                 }
+//                 passiveLocationManager.roadObjectMatcher.match(polyline: fucker!.polylineToIntersection, identifier: "\(locality.layername) \(info.gid) \(fucker!.locality.name) \(fucker!.roadEdge.identifier)")
+
+//             }
+
+//         }
+//     }
+// }
+
+
+=========================================
+
+
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didStart utterance: AVSpeechUtterance) {
+        print("number of strings pending to be said: \(pendingSpeakingNotifications.count)")
+        print("started saying \(utterance.speechString)")
+        do {
+            //AVAudioSession.sharedInstance().tryDuckAudio() | mode: .spokenAudio
+            try AVAudioSession.sharedInstance().setCategory(.playback ,options:[.duckOthers])
+            try AVAudioSession.sharedInstance().setActive(true)
+        } catch {
+            print("Failed in speech starter")
+        }
+        
+    }
+    
+    func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        print("finished saying \(utterance.speechString)")
+        do {
+            if (self.pendingSpeakingNotifications.isEmpty) {
+                //AVAudioSession.sharedInstance().tryUnduckAudio()
+                print("unducking audio because pending speaking notifications is empty")
+                try AVAudioSession.sharedInstance().setActive(false)
+            } else {
+                //self.speaker!.speak(speechMaker(string: self.pendingSpeakingNotifications.removeFirst()))
+                processSpeakingNotificationQueue() //hope this works, if not, restore this
+            }
+        } catch {
+            print("Failed in speech finisher (was it because we stepped on itself?)")
+            
+        }
+    }
+    
+    public func playAWACSSound() {
+        print("playing awacs sound function")
+        if let soundUrl = Bundle.main.url(forResource: "sounds/awacslouder", withExtension: "mp3") {
+            do {
+                try AVAudioSession.sharedInstance().setCategory(.playback, options: [.mixWithOthers])
+                try AVAudioSession.sharedInstance().setActive(true)
+                
+                self.player2 = try AVAudioPlayer(contentsOf: soundUrl)
+                self.player2!.delegate = self
+                self.player2!.volume = 1.0
+                self.player2!.prepareToPlay()
+                
+                print("Playing sound. soundUrl=\(soundUrl)")
+                self.player2!.play()
+                
+            } catch {
+                print("Failed to create audio player. soundUrl=\(soundUrl) error=\(error)")
+            }
+        } else {
+            print("Sound file not found in app bundle. ")
+        }
+    }
+
+    func processSpeakingNotificationQueue() {
+        if self.pendingSpeakingNotifications.first?.split(separator: " ").first == "Entering" {
+            if self.speaker!.isSpeaking {
+                self.speaker!.stopSpeaking(at: .immediate)
+            }
+            if ((self.player2?.isPlaying) != nil && true) {
+                self.player2!.stop()
+            }
+            play(enteredstring: pendingSpeakingNotifications.removeFirst(), alert: true)
+        } else {
+            if !pendingSpeakingNotifications.isEmpty {
+                //self.speaker!.speak(speechMaker(string: pendingSpeakingNotifications.removeFirst()))
+                play(enteredstring: pendingSpeakingNotifications.removeFirst())
+            }
+        }
+    }
+
+        func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
+        //self.player?.stop()
+        print("AUDIO PLAYER REPORTS TO HAVE STOPPED")
+        do {
+            if (!pendingSpeakingNotifications.isEmpty){
+                //self.speaker!.speak(speechMaker(string: pendingSpeakingNotifications.removeFirst()))
+                play(enteredstring: pendingSpeakingNotifications.removeFirst())
+                print("processing queue call from audio player did finish playing")
+            } else {
+                try AVAudioSession.sharedInstance().setActive(false) //todo: this might cause me problems
+                print("setting active to false in audio player did finish playing")
+            }
+            // This is to unduck others, make other playing sounds go back up in volume
+            //try AVAudioSession.sharedInstance().setActive(false) //todo: might have to comment this out it because we stepped
+        } catch {
+            print("Failed to set AVAudioSession inactive. error=\(error)")
+        }
+    }
+    
+    func speechMaker(string: String) -> AVSpeechUtterance {
+        let newidea = AVSpeechUtterance(string: string)
+        //newidea.voice = AVSpeechSynthesisVoice(identifier: AVSpeechSynthesisVoiceIdentifierAlex)
+        //print(AVSpeechSynthesisVoice.speechVoices())
+        //com.apple.ttsbundle.Allison-premium Ava Smantha Susan// com.apple.speech.synthesis.voice.Victoria
+        newidea.voice = AVSpeechSynthesisVoice(identifier: "com.apple.ttsbundle.siri_female_en-US_compact")
+        newidea.postUtteranceDelay = 0.0 //0.025 0.010 0.005
+        newidea.pitchMultiplier = 1.05 //1.05 or 1.03
+        //newidea.volume = 10
+        if #available(iOS 14.0, *) {
+            newidea.prefersAssistiveTechnologySettings = true
+        } else {
+            // Fallback on earlier versions
+        }
+        newidea.rate = (AVSpeechUtteranceMaximumSpeechRate-AVSpeechUtteranceMinimumSpeechRate/2) * 0.51
+        return newidea
+        
+        //postut 0.05 and pitch 1.05 for siri female (also consider increasing rate of speech)
+    }
+
+
+====================
+
+//    func testPerformanceExample() throws {
+//        // This is an example of a performance test case.
+//        self.measure {
+//            // Put the code you want to measure the time of here.
+//        }
+//    }
+
+============================
+
+
+//            let origin = CLLocationCoordinate2DMake(37.7744, -122.4353)
+//            let destination = CLLocationCoordinate2DMake(37.7655, -122.4240)
+//            let options = NavigationRouteOptions(coordinates: [origin, destination])
+//
+//            Directions.shared.calculate(options, completionHandler: { [weak self] (_, result) in
+//                switch result {
+//                case .failure(let error):
+//                    print(error.localizedDescription)
+//                case .success(let response):
+//                    guard let route = response.routes?.first, let strongSelf = self else {
+//                        return
+//                    }
+//                    let navigationService = MapboxNavigationService(route: route, routeIndex: 0, routeOptions: options, simulating: .always)
+//                    navigationService.simulationSpeedMultiplier = 5
+//                    let navigationOptions = NavigationOptions(navigationService: navigationService)
+//                    let navigationViewController = NavigationViewController(for: route, routeIndex: 0, routeOptions: options, navigationOptions: navigationOptions)
+//                    navigationViewController.routeLineTracksTraversal = true
+//
+//                    strongSelf.present(navigationViewController, animated: true)
+//                }
+//            })
+
+============================
+
+//    a hack to help demo mode work with electronic horizon
+//        if viewController.demoMode && viewController.lastPlaceTapped != nil {
+//            var reports: [LocalityReport] = []
+//            for layer in viewController.trackingLayers {
+//                reports.append(layer.collectLocalityReport(CLLocation(latitude: viewController.lastPlaceTapped!.latitude, longitude: viewController.lastPlaceTapped!.longitude), layer.trackingFeatures!, viewController.navigation))
+//            }
+//            viewController.processLocalityReports(reports)
+//            //viewController.lastPlaceTapped
+//        }
+
+// pre-note: to know whether i should use EHP or not, check if i'm more than 400 meters from the last known root edge (or if that doesnt work, from the last location that i received an edge location at OR i could check the distance between the last known edge position and my current location)
+// note: to know whether i should use EHP or not, check if i'm more than 400 meters from the last known edge position
+
+// note: i figure out which road I'm going to cross by getting the road's name from the edge that ended up having the length needed to trigger a locality alert. this is where i do that linestring.coordinatefromstart trick but REMEMBER i need only do the length between the edge of the horizon that my position is on and the edge with the intersection AND i must remember to trim the edge of the horizion that my position is on by the amount that my position has advanced on that edge (use linestring.trim())
+// also remember that if im more than 400 meters from the linestring of the edge i was last identified to be on, then i cannot use electronic horizion to identify approaches and i must fall back to the original way.
+
+============================
+
+from paint lines function:
+
+//        print("\n")
+//        if let edgeMetadata = passiveLocationManager!.roadGraph.edgeMetadata(edgeIdentifier: edge.identifier) {
+//            for name in edgeMetadata.names {
+//                switch name {
+//                case .name(let name):
+//                    print("Road name: \(name)")
+//                case .code(let code):
+//                    print("Road code: \(code)")
+//                }
+//            }
+//        }
+//        print("Recurive Level: \(int!)")
+//        print("Horizon Level: \(edge.level)")
+//        print("Distance: \(edgeLineString.distance() ?? 0)m")
+//        print("Outlet Edges: \(edge.outletEdges.count)") // todo: GET OFFLINE MAP STUFF GOING
+    
+//        if let roadObjects = passiveLocationManager?.roadObjectStore.roadObjectEdgeLocations(edgeIdentifier: edge.identifier) {
+//            for roadObject in roadObjects.keys {
+//                let objectLookup = passiveLocationManager?.roadObjectStore.roadObject(identifier: roadObject)
+//                //print("Location: \(answer?.location)")
+//                print("Type: \(String(describing: objectLookup?.type))")
+//                switch objectLookup?.type {
+//                case .some(.tunnel(let tunnel)):
+//                    print("Tunnel name: \(String(describing: tunnel?.name))")
+//                case .some(.bridge):
+//                    break
+//                case .some(.incident(_)):
+//                    break
+//                case .some(.tollCollection(_)):
+//                    break
+//                case .some(.borderCrossing(_)):
+//                    break
+//                case .some(.serviceArea(_)):
+//                    break
+//                case .some(.restrictedArea):
+//                    break
+//                case .some(.userDefined):
+//                    break
+//                case .none:
+//                    break
+//                }
+//            }
+//        }
+
+
+============================
